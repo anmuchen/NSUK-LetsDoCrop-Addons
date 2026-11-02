@@ -1,0 +1,48 @@
+{
+  "mod": "farm_and_charm",
+  "prefix": "fac",
+  "label": "source.letsdocropaddons.farm_and_charm",
+  "discover": false,
+  "crops": [
+    {
+      "id": "tomato",
+      "seed": "farm_and_charm:tomato_seeds",
+      "plant": "farm_and_charm:tomato_crop",
+      "harvest_blocks": [
+        "farm_and_charm:tomato_crop_body"
+      ],
+      "harvest_height": 2,
+      "allow_non_crop_block": true
+    },
+    {
+      "id": "oat",
+      "seed": "farm_and_charm:oat_seeds",
+      "plant": "farm_and_charm:oat_crop"
+    },
+    {
+      "id": "barley",
+      "seed": "farm_and_charm:barley_seeds",
+      "plant": "farm_and_charm:barley_crop"
+    },
+    {
+      "id": "corn",
+      "seed": "farm_and_charm:corn",
+      "plant": "farm_and_charm:corn_crop"
+    },
+    {
+      "id": "lettuce",
+      "seed": "farm_and_charm:lettuce_seeds",
+      "plant": "farm_and_charm:lettuce_crop"
+    },
+    {
+      "id": "onion",
+      "seed": "farm_and_charm:onion",
+      "plant": "farm_and_charm:onion_crop"
+    },
+    {
+      "id": "strawberry",
+      "seed": "farm_and_charm:strawberry_seeds",
+      "plant": "farm_and_charm:strawberry_crop"
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="GPL 3.0"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="沉浸系列：作物附属"
+logoFile="logo.png"
+authors="XiaoLiang小亮 & 安沐尘"
+description='''
+沉浸系列（Let's Do）：作物附属。
+让雇佣农民通过农田盒种植沉浸系列的作物 —— 番茄与啤酒花直接种在耕地上，葡萄沿用藤架。
+
+收录：
+· 沉浸农艺 —— 番茄（可长到两格高）、燕麦、大麦、玉米、生菜、洋葱、草莓
+· 盛节精酿 —— 啤酒花（按耕地走，不搭绳索）
+· 葡园酒香 —— 红葡萄、白葡萄、针叶林红/白葡萄、热带草原红/白葡萄、丛林红/白葡萄
+
+农民会自己铺土壤、播种、施骨粉、收割并补种。
+箱子里备好对应的种子即可（葡萄需要泥土类土壤）。
+
+暂不收录：树木、蘑菇与水稻（需要水田的作物）。
+
+新增其它沉浸系列模组时，在 data/letsdocropaddons/letsdo_crops/ 放一份 JSON 即可。
+'''
+
+[[mixins]]
+config="letsdocropaddons.mixins.json"
+
+[[mixins]]
+config="letsdocropaddons.compat.mixins.json"
+
+[[dependencies.${mod_id}]]
+    modId="neoforge"
+    type="required"
+    versionRange="[21.1.228,21.2)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    type="required"
+    versionRange="[1.21,1.22)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="nsukcropapi"
+    type="required"
+    versionRange="[1.0.0,)"
+    ordering="AFTER"
+    side="BOTH"
+    reason="农田盒作物注册表与五阶段作业接管由 NSUK 作物 API 提供"
+
+[[dependencies.${mod_id}]]
+    modId="simukraft"
+    type="required"
+    versionRange="[1.0,)"
+    ordering="AFTER"
+    side="BOTH"
+    reason="Hooks the NSUK farmland box crop list and farmer work cycle."
+
+[[dependencies.${mod_id}]]
+    modId="farm_and_charm"
+    type="optional"
+    versionRange="[0,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="brewery"
+    type="optional"
+    versionRange="[0,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="vinery"
+    type="optional"
+    versionRange="[0,)"
+    ordering="AFTER"
+    side="BOTH"

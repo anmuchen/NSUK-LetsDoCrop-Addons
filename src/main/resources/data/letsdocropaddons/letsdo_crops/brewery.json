@@ -1,0 +1,18 @@
+{
+  "mod": "brewery",
+  "prefix": "bw",
+  "label": "source.letsdocropaddons.brewery",
+  "discover": false,
+  "crops": [
+    {
+      "id": "hops",
+      "seed": "brewery:hops",
+      "plant": "brewery:hops_crop",
+      "harvest_blocks": [
+        "brewery:hops_crop_body"
+      ],
+      "harvest_height": 2,
+      "allow_non_crop_block": true
+    }
+  ]
+}

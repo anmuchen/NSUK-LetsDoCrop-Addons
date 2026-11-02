@@ -1,0 +1,156 @@
+{
+  "mod": "vinery",
+  "prefix": "vin",
+  "label": "source.letsdocropaddons.vinery",
+  "discover": false,
+  "crops": [
+    {
+      "id": "red",
+      "seed": "vinery:red_grape_seeds",
+      "plant": "vinery:grapevine_stem",
+      "layout": "vine_stack",
+      "support_block": "vinery:grapevine_stem",
+      "fruit_item": "vinery:red_grape",
+      "plant_properties": {
+        "grape": "red"
+      },
+      "soil_blocks": [
+        "minecraft:dirt",
+        "minecraft:grass_block",
+        "minecraft:coarse_dirt",
+        "minecraft:podzol",
+        "minecraft:rooted_dirt"
+      ],
+      "soil_item": "minecraft:dirt"
+    },
+    {
+      "id": "white",
+      "seed": "vinery:white_grape_seeds",
+      "plant": "vinery:grapevine_stem",
+      "layout": "vine_stack",
+      "support_block": "vinery:grapevine_stem",
+      "fruit_item": "vinery:white_grape",
+      "plant_properties": {
+        "grape": "white"
+      },
+      "soil_blocks": [
+        "minecraft:dirt",
+        "minecraft:grass_block",
+        "minecraft:coarse_dirt",
+        "minecraft:podzol",
+        "minecraft:rooted_dirt"
+      ],
+      "soil_item": "minecraft:dirt"
+    },
+    {
+      "id": "savanna_red",
+      "seed": "vinery:savanna_grape_seeds_red",
+      "plant": "vinery:grapevine_stem",
+      "layout": "vine_stack",
+      "support_block": "vinery:grapevine_stem",
+      "fruit_item": "vinery:savanna_grapes_red",
+      "plant_properties": {
+        "grape": "savanna_red"
+      },
+      "soil_blocks": [
+        "minecraft:dirt",
+        "minecraft:grass_block",
+        "minecraft:coarse_dirt",
+        "minecraft:podzol",
+        "minecraft:rooted_dirt"
+      ],
+      "soil_item": "minecraft:dirt"
+    },
+    {
+      "id": "savanna_white",
+      "seed": "vinery:savanna_grape_seeds_white",
+      "plant": "vinery:grapevine_stem",
+      "layout": "vine_stack",
+      "support_block": "vinery:grapevine_stem",
+      "fruit_item": "vinery:savanna_grapes_white",
+      "plant_properties": {
+        "grape": "savanna_white"
+      },
+      "soil_blocks": [
+        "minecraft:dirt",
+        "minecraft:grass_block",
+        "minecraft:coarse_dirt",
+        "minecraft:podzol",
+        "minecraft:rooted_dirt"
+      ],
+      "soil_item": "minecraft:dirt"
+    },
+    {
+      "id": "taiga_red",
+      "seed": "vinery:taiga_grape_seeds_red",
+      "plant": "vinery:grapevine_stem",
+      "layout": "vine_stack",
+      "support_block": "vinery:grapevine_stem",
+      "fruit_item": "vinery:taiga_grapes_red",
+      "plant_properties": {
+        "grape": "taiga_red"
+      },
+      "soil_blocks": [
+        "minecraft:dirt",
+        "minecraft:grass_block",
+        "minecraft:coarse_dirt",
+        "minecraft:podzol",
+        "minecraft:rooted_dirt"
+      ],
+      "soil_item": "minecraft:dirt"
+    },
+    {
+      "id": "taiga_white",
+      "seed": "vinery:taiga_grape_seeds_white",
+      "plant": "vinery:grapevine_stem",
+      "layout": "vine_stack",
+      "support_block": "vinery:grapevine_stem",
+      "fruit_item": "vinery:taiga_grapes_white",
+      "plant_properties": {
+        "grape": "taiga_white"
+      },
+      "soil_blocks": [
+        "minecraft:dirt",
+        "minecraft:grass_block",
+        "minecraft:coarse_dirt",
+        "minecraft:podzol",
+        "minecraft:rooted_dirt"
+      ],
+      "soil_item": "minecraft:dirt"
+    },
+    {
+      "id": "jungle_red",
+      "seed": "vinery:jungle_grape_seeds_red",
+      "plant": "vinery:jungle_grape_bush_red",
+      "layout": "lattice",
+      "plant_tag": "vinery:lattice",
+      "support_block": "vinery:jungle_lattice",
+      "fruit_item": "vinery:jungle_grapes_red",
+      "soil_blocks": [
+        "minecraft:dirt",
+        "minecraft:grass_block",
+        "minecraft:coarse_dirt",
+        "minecraft:podzol",
+        "minecraft:rooted_dirt"
+      ],
+      "soil_item": "minecraft:dirt"
+    },
+    {
+      "id": "jungle_white",
+      "seed": "vinery:jungle_grape_seeds_white",
+      "plant": "vinery:jungle_grape_bush_white",
+      "layout": "lattice",
+      "plant_tag": "vinery:lattice",
+      "support_block": "vinery:jungle_lattice",
+      "fruit_item": "vinery:jungle_grapes_white",
+      "soil_blocks": [
+        "minecraft:dirt",
+        "minecraft:grass_block",
+        "minecraft:coarse_dirt",
+        "minecraft:podzol",
+        "minecraft:rooted_dirt"
+      ],
+      "soil_item": "minecraft:dirt"
+    }
+  ]
+}
