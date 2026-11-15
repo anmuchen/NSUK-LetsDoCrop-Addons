@@ -53,10 +53,10 @@ config="letsdocropaddons.compat.mixins.json"
 [[dependencies.${mod_id}]]
     modId="simukraft"
     type="required"
-    versionRange="[1.0,)"
+    versionRange="[2.3.0,)"
     ordering="AFTER"
     side="BOTH"
-    reason="Hooks the NSUK farmland box crop list and farmer work cycle."
+    reason="Host of the farmland box; 2.3.0 is required because its package layout is what this build targets."
 
 [[dependencies.${mod_id}]]
     modId="farm_and_charm"
