@@ -1,13 +1,11 @@
 package com.xiaolianganmuchen.letsdocropaddons;
 
 import com.mojang.brigadier.Command;
-import com.nsukcropapi.nsuk.FarmlandBoxDataExt;
+import com.nsukcropapi.api.BoxView;
+import com.nsukcropapi.api.Boxes;
 import com.xiaolianganmuchen.letsdocropaddons.crop.CropCatalog;
 import com.xiaolianganmuchen.letsdocropaddons.crop.ResolvedCrop;
 import com.xiaolianganmuchen.letsdocropaddons.crop.TrellisCropWork;
-import common.cn.kafei.simukraft.farmland.FarmlandBoxData;
-import common.cn.kafei.simukraft.farmland.FarmlandBoxManager;
-import common.cn.kafei.simukraft.farmland.FarmlandBoxService;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -41,20 +39,20 @@ public final class CropDebugCommand {
                     ServerLevel level = player.serverLevel();
 
                     int shown = 0;
-                    for (FarmlandBoxData data : FarmlandBoxManager.get(level).all()) {
+                    for (BoxView box : Boxes.all(level)) {
                         if (shown++ >= MAX_BOXES) {
                             player.displayClientMessage(Component.literal("[diag] …… 农田盒过多，已截断"), false);
                             break;
                         }
-                        String cropId = ((FarmlandBoxDataExt) (Object) data).nsukcropapi$getCropId();
-                        BlockPos boxPos = data.boxPos();
+                        String cropId = box.cropId() == null ? "" : box.cropId();
+                        BlockPos boxPos = box.boxPos();
                         String where = boxPos.toShortString();
                         if (!player.blockPosition().closerThan(boxPos, 24.0)) {
                             where = where + "(远)";
                         }
                         player.displayClientMessage(Component.literal("[diag] 盒=" + where
                                 + " 作物=" + (cropId.isBlank() ? "(未设置)" : cropId)
-                                + " 运行=" + data.running()), false);
+                                + " 运行=" + box.running()), false);
 
                         if (cropId.isBlank()) {
                             continue;
@@ -64,14 +62,14 @@ public final class CropDebugCommand {
                             player.displayClientMessage(Component.literal("[diag]   作物未注册 / 被配置禁用"), false);
                             continue;
                         }
-                        if (data.plot() == null) {
+                        if (!box.hasPlot()) {
                             player.displayClientMessage(Component.literal("[diag]   没有圈地"), false);
                             continue;
                         }
-                        List<BlockPos> chests = FarmlandBoxService.resolveAdjacentChests(level, boxPos);
+                        List<BlockPos> chests = box.chests(level);
                         if (crop.isLattice()) {
                             player.displayClientMessage(Component.literal("[diag]   "
-                                    + TrellisCropWork.diagnoseLattice(level, crop, data.plot(), boxPos, chests)), false);
+                                    + TrellisCropWork.diagnoseLattice(level, crop, box.plot(), boxPos, chests)), false);
                         } else {
                             player.displayClientMessage(Component.literal("[diag]   布局="
                                     + (crop.isVineStack() ? "vine_stack" : crop.isTrellis() ? "trellis" : "普通耕地")

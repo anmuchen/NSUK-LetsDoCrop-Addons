@@ -1,9 +1,9 @@
 package com.xiaolianganmuchen.letsdocropaddons.crop;
 
-import common.cn.kafei.simukraft.farmland.FarmlandBoxData;
-import common.cn.kafei.simukraft.farmland.FarmlandBoxService;
-import common.cn.kafei.simukraft.farmland.FarmlandPlot;
-import common.cn.kafei.simukraft.material.WorkContainerService;
+import com.nsukcropapi.api.BoxView;
+import com.nsukcropapi.api.Boxes;
+import com.nsukcropapi.api.PlotView;
+import com.nsukcropapi.nsuk.WorkContainers;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -52,12 +52,12 @@ public final class TrellisCropWork {
    // 公开入口：按布局分发（藤架 / 木格架 / 藤茎堆 / 自定义土壤作物）
    // =====================================================================
 
-   public static Item statusItem(ServerLevel level, ResolvedCrop crop, FarmlandBoxData data) {
+   public static Item statusItem(ServerLevel level, ResolvedCrop crop, BoxView data) {
       if (crop == null) {
          return Items.AIR;
       } else if (level != null && data != null && data.plot() != null && data.boxPos() != null) {
-         FarmlandPlot plot = data.plot();
-         List<BlockPos> chests = FarmlandBoxService.resolveAdjacentChests(level, data.boxPos());
+         PlotView plot = data.plot();
+         List<BlockPos> chests = data.chests(level);
          BlockPos boxPos = data.boxPos();
          if (crop.isLattice()) {
             return latticeStatusItem(level, crop, plot, boxPos, chests);
@@ -125,7 +125,7 @@ public final class TrellisCropWork {
                // 阶段 2：报「等种子」。等「整片田的葡萄种子都到位」再统一种。
                if (firstEmptyVine(level, crop, fruitPos) != null) {
                   Item seed = crop.seed();
-                  if (seed != Items.AIR && !WorkContainerService.hasItem(level, chests, seed)) {
+                  if (seed != Items.AIR && !WorkContainers.has(level, chests, seed)) {
                      return seed;
                   }
                   if (next == Items.AIR) {
@@ -136,7 +136,7 @@ public final class TrellisCropWork {
                // 阶段 3：报「等成熟」。所有 hang 位都在长（age < max），展示一颗同模组的成熟葡萄，
                // 让玩家从 NPC 头顶的「葡萄」读出"在等成熟"。
                Item fruit = crop.fruitItem();
-               if (fruit != Items.AIR && !WorkContainerService.hasItem(level, chests, fruit)) {
+               if (fruit != Items.AIR && !WorkContainers.has(level, chests, fruit)) {
                   return fruit;
                }
                if (next == Items.AIR) {
@@ -158,14 +158,14 @@ public final class TrellisCropWork {
     * 要么在插葡萄藤 —— 两者需要的东西不同；只有没有目标（{@code missing_seed} 等）时，
     * 才退回全局优先级扫描去猜「下一件缺的东西」。</p>
     */
-   public static Item statusItemForPhase(ServerLevel level, ResolvedCrop crop, FarmlandBoxData data, String phaseKey) {
+   public static Item statusItemForPhase(ServerLevel level, ResolvedCrop crop, BoxView data, String phaseKey) {
       if (crop == null) {
          return Items.AIR;
       } else if (level == null || data == null || data.plot() == null || data.boxPos() == null) {
          return crop.seed();
       } else {
-         FarmlandPlot plot = data.plot();
-         List<BlockPos> chests = FarmlandBoxService.resolveAdjacentChests(level, data.boxPos());
+         PlotView plot = data.plot();
+         List<BlockPos> chests = data.chests(level);
          boolean tillPhase = phaseKey != null && phaseKey.endsWith(".till");
          boolean plantPhase = phaseKey != null && phaseKey.endsWith(".plant");
          if (tillPhase) {
@@ -261,7 +261,7 @@ public final class TrellisCropWork {
     * plot 内（除 boxPos 之外）任何非角格 cell 是否有空 hang 位。
     * 配合 {@link #statusItemForPhase} 的「等种子」判定：哪怕只有 1 串还没挂出来都算。
     */
-   private static boolean anyHangEmpty(ServerLevel level, ResolvedCrop crop, FarmlandPlot plot, BlockPos boxPos) {
+   private static boolean anyHangEmpty(ServerLevel level, ResolvedCrop crop, PlotView plot, BlockPos boxPos) {
       int cells = Math.max(1, plot.cellCount());
       for (int index = 0; index < cells; index++) {
          BlockPos fruitPos = plot.cellAt(index);
@@ -282,7 +282,7 @@ public final class TrellisCropWork {
     * plot 内（除 boxPos 之外）所有非角格 cell 的 hang 位都「在长、没空、也没熟」。
     * 用于「等成熟」阶段判定：玩家看到 NPC 头顶的「葡萄」即代表这一阶段。
     */
-   private static boolean allHangGrowing(ServerLevel level, ResolvedCrop crop, FarmlandPlot plot, BlockPos boxPos) {
+   private static boolean allHangGrowing(ServerLevel level, ResolvedCrop crop, PlotView plot, BlockPos boxPos) {
       int cells = Math.max(1, plot.cellCount());
       boolean hasAnyHang = false;
       for (int index = 0; index < cells; index++) {
@@ -315,7 +315,7 @@ public final class TrellisCropWork {
    }
 
    /** 这片田里还有没有任何一根立柱 / 一条横梁没铺好。 */
-   private static boolean hasFrameWork(ServerLevel level, ResolvedCrop crop, FarmlandPlot plot, BlockPos boxPos) {
+   private static boolean hasFrameWork(ServerLevel level, ResolvedCrop crop, PlotView plot, BlockPos boxPos) {
       int cells = Math.max(1, plot.cellCount());
 
       for (int index = 0; index < cells; index++) {
@@ -341,7 +341,7 @@ public final class TrellisCropWork {
     * （显示成「等待中：灵魂沙」），土壤齐了才轮到种子（「等待种子：红辣椒」）。
     * 这样农民头上的提示不会一会儿缺土、一会儿缺种子地来回跳。</p>
     */
-   private static Item soilCropStatusItem(ServerLevel level, ResolvedCrop crop, FarmlandPlot plot, BlockPos boxPos, List<BlockPos> chests) {
+   private static Item soilCropStatusItem(ServerLevel level, ResolvedCrop crop, PlotView plot, BlockPos boxPos, List<BlockPos> chests) {
       Item seed = crop.seed();
       boolean needsSoil = false;
       int cells = Math.max(1, plot.cellCount());
@@ -356,7 +356,7 @@ public final class TrellisCropWork {
 
       if (needsSoil && !hasAnySoilItem(level, chests, crop)) {
          return crop.soilItem();
-      } else if (seed != Items.AIR && !WorkContainerService.hasItem(level, chests, seed)) {
+      } else if (seed != Items.AIR && !WorkContainers.has(level, chests, seed)) {
          return seed;
       } else {
          return seed != Items.AIR ? seed : crop.soilItem();
@@ -366,7 +366,7 @@ public final class TrellisCropWork {
    /** 箱子里有没有任意一种本作物可用的土壤材料。 */
    private static boolean hasAnySoilItem(ServerLevel level, List<BlockPos> chests, ResolvedCrop crop) {
       for (Item item : crop.soilItems()) {
-         if (item != null && item != Items.AIR && WorkContainerService.hasItem(level, chests, item)) {
+         if (item != null && item != Items.AIR && WorkContainers.has(level, chests, item)) {
             return true;
          }
       }
@@ -381,7 +381,7 @@ public final class TrellisCropWork {
    private static Item availableSoilItem(ServerLevel level, List<BlockPos> chests, ResolvedCrop crop) {
       if (level != null && chests != null && crop != null) {
          for (Item item : crop.soilItems()) {
-            if (item != null && item != Items.AIR && WorkContainerService.hasItem(level, chests, item)) {
+            if (item != null && item != Items.AIR && WorkContainers.has(level, chests, item)) {
                return item;
             }
          }
@@ -422,13 +422,13 @@ public final class TrellisCropWork {
          return false;
       } else {
          Item soilItem = availableSoilItem(level, chests, crop);
-         if (soilItem instanceof BlockItem blockItem && WorkContainerService.consumeItem(level, chests, soilItem)) {
+         if (soilItem instanceof BlockItem blockItem && WorkContainers.consume(level, chests, soilItem)) {
             BlockPos soilPos = fruitPos.below();
             BlockState previous = level.getBlockState(soilPos);
             if (!previous.isAir()) {
                List<ItemStack> drops = Block.getDrops(previous, level, soilPos, level.getBlockEntity(soilPos));
                level.setBlock(soilPos, Blocks.AIR.defaultBlockState(), 3);
-               WorkContainerService.depositDropsOrDrop(level, chests, drops, soilPos);
+               WorkContainers.deposit(level, chests, drops, soilPos);
             }
 
             level.setBlock(soilPos, blockItem.getBlock().defaultBlockState(), 3);
@@ -493,7 +493,7 @@ public final class TrellisCropWork {
       } else {
          // 整片田还缺任何一根立柱 / 一条横梁 → 这一轮就去补框架，放弃种藤。
          // 避免了「这格框架齐了先种了藤，下一轮才回去补其它 cell 的柱子」这种抢跑。
-         FarmlandBoxData boxData = CropContext.currentBox().orElse(null);
+         BoxView boxData = Boxes.current().orElse(null);
          if (boxData != null && boxData.plot() != null && hasFrameWork(level, crop, boxData.plot(), boxData.boxPos())) {
             return false;
          }
@@ -509,7 +509,7 @@ public final class TrellisCropWork {
                BlockPos bare = firstEmptyVine(level, crop, fruitPos);
                if (bare == null) {
                   return false;
-               } else if (!WorkContainerService.consumeItem(level, chests, crop.seed())) {
+               } else if (!WorkContainers.consume(level, chests, crop.seed())) {
                   return false;
                } else {
                   BlockState above = level.getBlockState(bare);
@@ -668,7 +668,7 @@ public final class TrellisCropWork {
          }
 
          if (!drops.isEmpty()) {
-            WorkContainerService.depositDropsOrDrop(level, chests, drops, hang);
+            WorkContainers.deposit(level, chests, drops, hang);
          }
       }
    }
@@ -725,12 +725,12 @@ public final class TrellisCropWork {
    }
 
    /** 水槽行判定（按地块坐标，不依赖线程上下文）。 */
-   public static boolean isWaterTroughCell(FarmlandPlot plot, BlockPos cell) {
+   public static boolean isWaterTroughCell(PlotView plot, BlockPos cell) {
       return plot != null && cell != null && Math.floorMod(cell.getZ() - plot.min().getZ(), 4) == 3;
    }
 
    /** 木格架的过道行（按地块坐标，不依赖线程上下文）。 */
-   public static boolean isLatticeAisle(FarmlandPlot plot, BlockPos cell) {
+   public static boolean isLatticeAisle(PlotView plot, BlockPos cell) {
       return plot != null && cell != null && Math.floorMod(cell.getZ() - plot.min().getZ(), 2) == 1;
    }
 
@@ -749,8 +749,7 @@ public final class TrellisCropWork {
       if (state == null || !state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
          return state;
       }
-      common.cn.kafei.simukraft.farmland.FarmlandBoxData box = CropContext.currentBox().orElse(null);
-      common.cn.kafei.simukraft.farmland.FarmlandPlot plot = box != null ? box.plot() : null;
+      PlotView plot = Boxes.current().map(BoxView::plot).orElse(null);
       boolean alongX = plot == null || plot.width() >= plot.depth();
       return state.setValue(BlockStateProperties.HORIZONTAL_FACING, alongX ? Direction.NORTH : Direction.EAST);
    }
@@ -759,8 +758,7 @@ public final class TrellisCropWork {
       if (cell == null) {
          return false;
       }
-      common.cn.kafei.simukraft.farmland.FarmlandBoxData box = CropContext.currentBox().orElse(null);
-      common.cn.kafei.simukraft.farmland.FarmlandPlot plot = box != null ? box.plot() : null;
+      PlotView plot = Boxes.current().map(BoxView::plot).orElse(null);
       return plot != null && Math.floorMod(cell.getZ() - plot.min().getZ(), 2) == 1;
    }
 
@@ -789,7 +787,7 @@ public final class TrellisCropWork {
     *
     * <p>用来区分“真的缺格架”和“格子被过道/水槽规则跳过了”，不必再靠猜。</p>
     */
-   public static String diagnoseLattice(ServerLevel level, ResolvedCrop crop, FarmlandPlot plot, BlockPos boxPos, List<BlockPos> chests) {
+   public static String diagnoseLattice(ServerLevel level, ResolvedCrop crop, PlotView plot, BlockPos boxPos, List<BlockPos> chests) {
       int total = 0;
       int trough = 0;
       int aisle = 0;
@@ -850,12 +848,12 @@ public final class TrellisCropWork {
       }
       boolean hasLatticeItem = false;
       for (Item item : crop.plantTagItems()) {
-         if (item != Items.AIR && WorkContainerService.hasItem(level, chests, item)) {
+         if (item != Items.AIR && WorkContainers.has(level, chests, item)) {
             hasLatticeItem = true;
             break;
          }
       }
-      boolean hasSeed = WorkContainerService.hasItem(level, chests, crop.seed());
+      boolean hasSeed = WorkContainers.has(level, chests, crop.seed());
       return "作物=" + crop.id() + " 布局=" + (crop.isLattice() ? "lattice" : crop.isVineStack() ? "vine_stack" : "trellis")
               + " | 田格=" + total + " 水槽=" + trough + " 过道=" + aisle
               + " | 已放架=" + placed + "(未播" + unseeded + "/生长" + growing + "/可收" + ready + ")"
@@ -873,7 +871,7 @@ public final class TrellisCropWork {
     *   <li>至少一格 age&gt;=3 → 葡萄成品（HARVEST 阶段接管）</li>
     * </ol>
     */
-   private static Item latticeStatusItem(ServerLevel level, ResolvedCrop crop, FarmlandPlot plot, BlockPos boxPos, List<BlockPos> chests) {
+   private static Item latticeStatusItem(ServerLevel level, ResolvedCrop crop, PlotView plot, BlockPos boxPos, List<BlockPos> chests) {
       boolean anyFrameToDo = anyLatticeToDo(level, crop, plot, boxPos);
       boolean anyUnseeded = false;
       boolean anyGrowing = false;
@@ -985,7 +983,7 @@ public final class TrellisCropWork {
    }
 
    /** plot 内（除 boxPos 所在列）是否还有 cell 缺格架或有杂物。 */
-   private static boolean anyLatticeToDo(ServerLevel level, ResolvedCrop crop, FarmlandPlot plot, BlockPos boxPos) {
+   private static boolean anyLatticeToDo(ServerLevel level, ResolvedCrop crop, PlotView plot, BlockPos boxPos) {
       int cells = Math.max(1, plot.cellCount());
       for (int index = 0; index < cells; index++) {
          BlockPos cell = plot.cellAt(index);
@@ -1003,7 +1001,7 @@ public final class TrellisCropWork {
    }
 
    /** plot 内（除 boxPos 所在列）是否还有 age==0 的未播种格架。 */
-   private static boolean anyLatticeUnseeded(ServerLevel level, ResolvedCrop crop, FarmlandPlot plot, BlockPos boxPos) {
+   private static boolean anyLatticeUnseeded(ServerLevel level, ResolvedCrop crop, PlotView plot, BlockPos boxPos) {
       int cells = Math.max(1, plot.cellCount());
       for (int index = 0; index < cells; index++) {
          BlockPos cell = plot.cellAt(index);
@@ -1022,7 +1020,7 @@ public final class TrellisCropWork {
 
    /** 整片田（除 boxPos 所在列）所有可耕 cell 都铺上木格架了？未加载的格子不阻塞。 */
    private static boolean allLatticesPlaced(ServerLevel level, ResolvedCrop crop, BlockPos boxPos) {
-      FarmlandPlot plot = currentPlot();
+      PlotView plot = currentPlot();
       if (plot == null) {
          return true;
       }
@@ -1076,7 +1074,7 @@ public final class TrellisCropWork {
          if (latticeItem == Items.AIR || !(latticeItem instanceof BlockItem blockItem)) {
             return false;
          }
-         if (!WorkContainerService.consumeItem(level, chests, latticeItem)) {
+         if (!WorkContainers.consume(level, chests, latticeItem)) {
             return false;
          }
          BlockState placed = orientLattice(blockItem.getBlock().defaultBlockState());
@@ -1100,7 +1098,7 @@ public final class TrellisCropWork {
          }
          // 先模拟播种，成功了再从箱子里扣种子（原版 shrink 只作用在这个临时栈上）。
          if (CropHarvest.useItemOnAsPlayer(level, cell, new ItemStack(seed))) {
-            WorkContainerService.consumeItem(level, chests, seed);
+            WorkContainers.consume(level, chests, seed);
             return true;
          }
       }
@@ -1111,7 +1109,7 @@ public final class TrellisCropWork {
    private static Item firstAvailableLatticeItem(ServerLevel level, List<BlockPos> chests, ResolvedCrop crop) {
       if (level != null && chests != null && crop != null) {
          for (Item item : crop.plantTagItems()) {
-            if (item != null && item != Items.AIR && WorkContainerService.hasItem(level, chests, item)) {
+            if (item != null && item != Items.AIR && WorkContainers.has(level, chests, item)) {
                return item;
             }
          }
@@ -1144,7 +1142,7 @@ public final class TrellisCropWork {
     *   <li>至少一株 age&gt;=4 → 葡萄成品（HARVEST 阶段接管）</li>
     * </ol>
     */
-   private static Item vineStackStatusItem(ServerLevel level, ResolvedCrop crop, FarmlandPlot plot, BlockPos boxPos, List<BlockPos> chests) {
+   private static Item vineStackStatusItem(ServerLevel level, ResolvedCrop crop, PlotView plot, BlockPos boxPos, List<BlockPos> chests) {
       boolean anyFrameToDo = anyStemStackToDo(level, crop, plot, boxPos);
       boolean anyUnseeded = false;
       boolean anyGrowing = false;
@@ -1253,7 +1251,7 @@ public final class TrellisCropWork {
    }
 
    /** plot 内（除 boxPos 所在列）是否还有 cell 缺茎或有杂物。 */
-   private static boolean anyStemStackToDo(ServerLevel level, ResolvedCrop crop, FarmlandPlot plot, BlockPos boxPos) {
+   private static boolean anyStemStackToDo(ServerLevel level, ResolvedCrop crop, PlotView plot, BlockPos boxPos) {
       int cells = Math.max(1, plot.cellCount());
       for (int index = 0; index < cells; index++) {
          BlockPos cell = plot.cellAt(index);
@@ -1268,7 +1266,7 @@ public final class TrellisCropWork {
    }
 
    /** plot 内（除 boxPos 所在列）是否还有 age==0 的未播种顶茎。 */
-   private static boolean anyTopStemUnseeded(ServerLevel level, ResolvedCrop crop, FarmlandPlot plot, BlockPos boxPos) {
+   private static boolean anyTopStemUnseeded(ServerLevel level, ResolvedCrop crop, PlotView plot, BlockPos boxPos) {
       int cells = Math.max(1, plot.cellCount());
       for (int index = 0; index < cells; index++) {
          BlockPos cell = plot.cellAt(index);
@@ -1288,7 +1286,7 @@ public final class TrellisCropWork {
 
    /** 整片田（除 boxPos 所在列）所有可耕 cell 都铺齐两格茎堆了？未加载的格子不阻塞。 */
    private static boolean allStemStacksComplete(ServerLevel level, ResolvedCrop crop, BlockPos boxPos) {
-      FarmlandPlot plot = currentPlot();
+      PlotView plot = currentPlot();
       if (plot == null) {
          return true;
       }
@@ -1314,11 +1312,11 @@ public final class TrellisCropWork {
     * 否则缺种子的空格会一直占着 PLANT 目标，永远轮不到 HARVEST —— 表现就是“只播种、不收割”。</p>
     */
    public static boolean needsSeedlessPlantWork(ServerLevel level, ResolvedCrop crop) {
-      FarmlandBoxData box = CropContext.currentBox().orElse(null);
+      BoxView box = Boxes.current().orElse(null);
       if (level == null || crop == null || box == null || box.plot() == null) {
          return false;
       }
-      FarmlandPlot plot = box.plot();
+      PlotView plot = box.plot();
       BlockPos boxPos = box.boxPos();
       if (crop.isVineStack()) {
          if (!allStemStacksComplete(level, crop, boxPos)) {
@@ -1414,7 +1412,7 @@ public final class TrellisCropWork {
          if (stemItem == Items.AIR || !(stemItem instanceof BlockItem blockItem)) {
             return false;
          }
-         if (!WorkContainerService.consumeItem(level, chests, stemItem)) {
+         if (!WorkContainers.consume(level, chests, stemItem)) {
             return false;
          }
          level.setBlock(need, withWaterlog(blockItem.getBlock().defaultBlockState(), level.getBlockState(need)), 3);
@@ -1448,7 +1446,7 @@ public final class TrellisCropWork {
             return false;
          }
          if (CropHarvest.useItemOnAsPlayer(level, top, new ItemStack(seed))) {
-            WorkContainerService.consumeItem(level, chests, seed);
+            WorkContainers.consume(level, chests, seed);
             return true;
          }
       }
@@ -1468,7 +1466,7 @@ public final class TrellisCropWork {
     *
     * @return 被补正的方块数量，仅用于日志
     */
-   public static int settleFrame(ServerLevel level, ResolvedCrop crop, FarmlandPlot plot) {
+   public static int settleFrame(ServerLevel level, ResolvedCrop crop, PlotView plot) {
       if (level == null || crop == null || plot == null || !crop.isTrellis() || crop.isMissing()) {
          return 0;
       } else {
@@ -1536,7 +1534,7 @@ public final class TrellisCropWork {
       BlockState state = level.getBlockState(pos);
       List<ItemStack> drops = Block.getDrops(state, level, pos, level.getBlockEntity(pos));
       level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
-      WorkContainerService.depositDropsOrDrop(level, chests, drops, pos);
+      WorkContainers.deposit(level, chests, drops, pos);
    }
 
    private static BlockPos missingPost(ServerLevel level, ResolvedCrop crop, BlockPos corner) {
@@ -1564,11 +1562,11 @@ public final class TrellisCropWork {
    }
 
    private static boolean isCorner(BlockPos pos) {
-      FarmlandBoxData data = CropContext.currentBox().orElse(null);
+      BoxView data = Boxes.current().orElse(null);
       return isCorner(data == null ? null : data.plot(), pos);
    }
 
-   private static boolean isCorner(FarmlandPlot plot, BlockPos pos) {
+   private static boolean isCorner(PlotView plot, BlockPos pos) {
       if (plot != null && pos != null) {
          boolean edgeX = pos.getX() == plot.min().getX() || pos.getX() == plot.max().getX();
          boolean edgeZ = pos.getZ() == plot.min().getZ() || pos.getZ() == plot.max().getZ();
@@ -1579,8 +1577,8 @@ public final class TrellisCropWork {
    }
 
    /** 当前正在处理的农田盒（拿不到 plot 时返回 null，调用方据此跳过 plot 级门禁）。 */
-   private static FarmlandPlot currentPlot() {
-      FarmlandBoxData data = CropContext.currentBox().orElse(null);
+   private static PlotView currentPlot() {
+      BoxView data = Boxes.current().orElse(null);
       return data == null ? null : data.plot();
    }
 
@@ -1790,7 +1788,7 @@ public final class TrellisCropWork {
          return false;
       } else {
          Item supportItem = supportItem(crop);
-         if (supportItem != Items.AIR && WorkContainerService.consumeItem(level, chests, supportItem)) {
+         if (supportItem != Items.AIR && WorkContainers.consume(level, chests, supportItem)) {
             BlockState previous = level.getBlockState(pos);
             if (!previous.isAir() && previous.canBeReplaced()) {
                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);

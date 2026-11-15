@@ -70,13 +70,13 @@ configurations {
 dependencies {
     // NSUK crop API — 农田盒作物注册表 / 五阶段作业接管 / 选择界面都由它提供。
     // 本模组只负责"作物定义 + 藤架与自定义土壤的作业实现"。
-    compileOnly files('libs/nsukcropapi-1.0.0.jar')
+    compileOnly files('libs/nsukcropapi-1.1.0.jar')
     // Host mod: New Sim U Kraft (simukraft) — provides the farmland box and hired farmer system we hook into.
     // Kept as a local jar because it is not published to any public Maven repository.
-    compileOnly files('libs/New-Sim-U-Kraft-2.2.0-neoforge-1.21.1.jar')
-    localRuntime files('libs/New-Sim-U-Kraft-2.2.0-neoforge-1.21.1.jar')
+    // 宿主只进运行时，不进编译期：源码里的农田盒、圈地几何、箱子与雇农全部经 nsukcropapi 转接。
+    localRuntime files('libs/New-Sim-U-Kraft-2.3.0-neoforge-1.21.1.jar')
     // LDLib2 provides the GUI toolkit used by the farmland box screens (shipped with the host mod).
-    compileOnly files('libs/ldlib2-neoforge-1.21.1-2.2.40-all.jar')
+    compileOnly files('libs/ldlib2-neoforge-1.21.1-2.2.42-all.jar')
     // JarJar-nested libraries of LDLib2 (layout engine + style model), needed to compile the screens.
     compileOnly files('libs/taffy-1.1.4.jar')
     compileOnly files('libs/yoga-1.0.0.jar')

@@ -26,9 +26,6 @@ description='''
 '''
 
 [[mixins]]
-config="letsdocropaddons.mixins.json"
-
-[[mixins]]
 config="letsdocropaddons.compat.mixins.json"
 
 [[dependencies.${mod_id}]]
@@ -48,7 +45,7 @@ config="letsdocropaddons.compat.mixins.json"
 [[dependencies.${mod_id}]]
     modId="nsukcropapi"
     type="required"
-    versionRange="[1.0.0,)"
+    versionRange="[1.1.0,)"
     ordering="AFTER"
     side="BOTH"
     reason="农田盒作物注册表与五阶段作业接管由 NSUK 作物 API 提供"

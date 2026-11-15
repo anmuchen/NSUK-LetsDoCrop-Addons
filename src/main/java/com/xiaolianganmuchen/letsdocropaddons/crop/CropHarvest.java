@@ -2,7 +2,7 @@ package com.xiaolianganmuchen.letsdocropaddons.crop;
 
 import com.mojang.authlib.GameProfile;
 import com.xiaolianganmuchen.letsdocropaddons.LetsDoCropAddons;
-import common.cn.kafei.simukraft.material.WorkContainerService;
+import com.nsukcropapi.nsuk.WorkContainers;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -72,7 +72,7 @@ public final class CropHarvest {
                harvestSegment(level, crop, column.get(index), drops);
             }
 
-            WorkContainerService.depositDropsOrDrop(level, chestPositions, drops, cropPos);
+            WorkContainers.deposit(level, chestPositions, drops, cropPos);
             collectNewItems(level, chestPositions, area, before);
          }
       }
@@ -84,7 +84,7 @@ public final class CropHarvest {
          BlockState soilState = level.getBlockState(cropPos.below());
          if ((cropState.isAir() || cropState.canBeReplaced())
             && soilState.is(Blocks.FARMLAND)
-            && WorkContainerService.consumeItem(level, chestPositions, crop.seed())) {
+            && WorkContainers.consume(level, chestPositions, crop.seed())) {
             level.setBlock(cropPos, crop.plantState(), 3);
          }
       }
@@ -232,7 +232,7 @@ public final class CropHarvest {
     * 属性、方块实体（格架藤叶渲染）都由 {@code useItemOn} 自己写入，直接 {@code setBlock}
     * 会漏掉方块实体同步——表现为藤叶不渲染、客户端看到的状态和服务端不一致。</p>
     *
-    * <p>种子消耗由调用方先从箱子里取（{@code WorkContainerService#consumeItem}），
+    * <p>种子消耗由调用方先从箱子里取（{@code WorkContainers#consume}），
     * 这里传进去的是一次性栈：原版逻辑里的 {@code shrink} 只作用在这个临时栈上。</p>
     */
    public static boolean useItemOnAsPlayer(ServerLevel level, BlockPos pos, ItemStack stack) {
@@ -310,7 +310,7 @@ public final class CropHarvest {
       for (ItemEntity entity : List.copyOf(level.getEntitiesOfClass(ItemEntity.class, area))) {
          if (entity.isAlive() && !before.contains(entity.getUUID())) {
             ItemStack stack = entity.getItem();
-            ItemStack leftover = WorkContainerService.insertIntoAny(level, chestPositions, stack);
+            ItemStack leftover = WorkContainers.insert(level, chestPositions, stack);
             if (leftover.isEmpty()) {
                entity.discard();
             } else {

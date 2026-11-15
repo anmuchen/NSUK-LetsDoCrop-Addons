@@ -1,6 +1,9 @@
 package com.xiaolianganmuchen.letsdocropaddons.crop;
 
-import common.cn.kafei.simukraft.material.WorkContainerService;
+import com.nsukcropapi.api.BoxView;
+import com.nsukcropapi.api.Boxes;
+import com.nsukcropapi.api.PlotView;
+import com.nsukcropapi.nsuk.WorkContainers;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -25,7 +28,7 @@ public final class SoilCropWork {
    }
 
    /**
-    * 当前农田盒里这一格是不是水槽行（从 {@link CropContext} 取盒，拿不到盒时保守返回 false）。
+    * 当前农田盒里这一格是不是水槽行（从 {@link Boxes} 取盒，拿不到盒时保守返回 false）。
     *
     * <p>水槽里是水，既不是任何作物的土壤、又 {@code canBeReplaced()}，不排除就会被永久判成
     * 「该铺土」；而水槽行本来就不种东西，箱子里也不备土 → 农夫会永久卡在翻地阶段。
@@ -35,8 +38,7 @@ public final class SoilCropWork {
       if (cropPos == null) {
          return false;
       }
-      common.cn.kafei.simukraft.farmland.FarmlandBoxData box = CropContext.currentBox().orElse(null);
-      common.cn.kafei.simukraft.farmland.FarmlandPlot plot = box != null ? box.plot() : null;
+      PlotView plot = Boxes.current().map(BoxView::plot).orElse(null);
       return plot != null && Math.floorMod(cropPos.getZ() - plot.min().getZ(), 4) == 3;
    }
 
@@ -61,13 +63,13 @@ public final class SoilCropWork {
          return false;
       } else {
          Item soilItem = availableSoilItem(level, chests, crop);
-         if (soilItem instanceof BlockItem blockItem && WorkContainerService.consumeItem(level, chests, soilItem)) {
+         if (soilItem instanceof BlockItem blockItem && WorkContainers.consume(level, chests, soilItem)) {
             BlockPos soilPos = cropPos.below();
             BlockState previous = level.getBlockState(soilPos);
             if (!previous.isAir()) {
                List<ItemStack> drops = Block.getDrops(previous, level, soilPos, level.getBlockEntity(soilPos));
                level.setBlock(soilPos, Blocks.AIR.defaultBlockState(), 3);
-               WorkContainerService.depositDropsOrDrop(level, chests, drops, soilPos);
+               WorkContainers.deposit(level, chests, drops, soilPos);
             }
 
             level.setBlock(soilPos, blockItem.getBlock().defaultBlockState(), 3);
@@ -93,7 +95,7 @@ public final class SoilCropWork {
    public static boolean applyPlant(ServerLevel level, ResolvedCrop crop, List<BlockPos> chests, BlockPos cropPos) {
       if (!needsPlant(level, crop, cropPos)) {
          return false;
-      } else if (!WorkContainerService.consumeItem(level, chests, crop.seed())) {
+      } else if (!WorkContainers.consume(level, chests, crop.seed())) {
          return false;
       } else {
          level.setBlock(cropPos, crop.plantState(), 3);
@@ -105,7 +107,7 @@ public final class SoilCropWork {
    private static Item availableSoilItem(ServerLevel level, List<BlockPos> chests, ResolvedCrop crop) {
       if (level != null && chests != null && crop != null) {
          for (Item item : crop.soilItems()) {
-            if (item != null && item != Items.AIR && WorkContainerService.hasItem(level, chests, item)) {
+            if (item != null && item != Items.AIR && WorkContainers.has(level, chests, item)) {
                return item;
             }
          }

@@ -2,7 +2,7 @@ package com.xiaolianganmuchen.letsdocropaddons.crop;
 
 import com.xiaolianganmuchen.letsdocropaddons.compat.DelightAddonBridge;
 import com.xiaolianganmuchen.letsdocropaddons.config.CustomCropStorage;
-import common.cn.kafei.simukraft.farmland.FarmCrop;
+import com.nsukcropapi.api.BuiltinCrops;
 import java.util.Locale;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -17,9 +17,9 @@ public final class CropDisplayNames {
 
    public static Component of(String cropId) {
       if (cropId != null && !cropId.isBlank()) {
-         FarmCrop vanilla = FarmCrop.fromId(cropId);
-         if (vanilla != null) {
-            return Component.translatable(vanilla.translationKey());
+         String builtinKey = BuiltinCrops.translationKey(cropId);
+         if (builtinKey != null) {
+            return Component.translatable(builtinKey);
          } else {
             Component own = CropCatalog.resolve(cropId).map(CropDisplayNames::of).orElse(null);
             if (own != null) {
@@ -72,19 +72,6 @@ public final class CropDisplayNames {
 
    public static Component source(String modId) {
       return Component.translatable(CropCatalog.sourceLabelKey(modId));
-   }
-
-   public static boolean matches(String query, FarmCrop crop) {
-      if (query != null && !query.isBlank()) {
-         String needle = query.toLowerCase(Locale.ROOT).trim();
-         String key = crop.translationKey();
-         return CropLangIndex.haystack(
-               crop.id(), Component.translatable(key).getString(), CropLangIndex.en(key), CropLangIndex.zh(key), CropLangIndex.current(key)
-            )
-            .contains(needle);
-      } else {
-         return true;
-      }
    }
 
    public static boolean matches(String query, ResolvedCrop crop) {

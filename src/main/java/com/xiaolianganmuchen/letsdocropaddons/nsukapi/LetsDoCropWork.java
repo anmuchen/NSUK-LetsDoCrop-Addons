@@ -1,17 +1,17 @@
 package com.xiaolianganmuchen.letsdocropaddons.nsukapi;
 
+import com.nsukcropapi.api.BoxView;
+import com.nsukcropapi.api.Boxes;
 import com.nsukcropapi.api.CropSpec;
 import com.nsukcropapi.api.CropWork;
 import com.nsukcropapi.api.CropWorkContext;
 import com.nsukcropapi.api.StageOutcome;
 import com.nsukcropapi.nsuk.WorkContainers;
 import com.xiaolianganmuchen.letsdocropaddons.crop.CropCatalog;
-import com.xiaolianganmuchen.letsdocropaddons.crop.CropContext;
 import com.xiaolianganmuchen.letsdocropaddons.crop.CropHarvest;
 import com.xiaolianganmuchen.letsdocropaddons.crop.ResolvedCrop;
 import com.xiaolianganmuchen.letsdocropaddons.crop.SoilCropWork;
 import com.xiaolianganmuchen.letsdocropaddons.crop.TrellisCropWork;
-import common.cn.kafei.simukraft.farmland.FarmlandBoxData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -46,12 +46,12 @@ public final class LetsDoCropWork implements CropWork {
 
     @Override
     public void onTickStart(CropWorkContext ctx, CropSpec spec) {
-        CropContext.push(box(ctx));
+        Boxes.push(ctx == null ? null : ctx.data());
     }
 
     @Override
     public void onTickEnd(CropWorkContext ctx, CropSpec spec) {
-        CropContext.pop();
+        Boxes.pop();
     }
 
     /** 沿用乐事自己的种植状态（葡萄的 {@code grape=red}、种下即熟等）。 */
@@ -73,6 +73,13 @@ public final class LetsDoCropWork implements CropWork {
     public boolean isOwnPlant(BlockState state, CropSpec spec) {
         ResolvedCrop crop = crop(spec);
         return crop != null ? crop.isOwnPlant(state) : CropWork.super.isOwnPlant(state, spec);
+    }
+
+    /** 藤架类作物要把雇农站位换到架子下，宿主才知道该往哪儿走。 */
+    @Override
+    public Boolean usesTrellisWork(CropSpec spec) {
+        ResolvedCrop crop = crop(spec);
+        return crop == null ? null : crop.isTrellisWork();
     }
 
     @Override
@@ -263,7 +270,7 @@ public final class LetsDoCropWork implements CropWork {
         if (level == null) {
             return null;
         }
-        Item item = TrellisCropWork.statusItemForPhase(level, crop, box(ctx), statusKey);
+        Item item = TrellisCropWork.statusItemForPhase(level, crop, Boxes.current().orElse(null), statusKey);
         Component itemName = item != null && item != Items.AIR
                 ? item.getName(new ItemStack(item))
                 : Component.translatable(crop.statusTranslationKey());
@@ -299,9 +306,5 @@ public final class LetsDoCropWork implements CropWork {
             return null;
         }
         return CropCatalog.resolve(spec.id()).orElse(null);
-    }
-
-    private static FarmlandBoxData box(CropWorkContext ctx) {
-        return ctx != null && ctx.data() instanceof FarmlandBoxData data ? data : null;
     }
 }
